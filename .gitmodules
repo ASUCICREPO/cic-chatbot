@@ -1,0 +1,3 @@
+[submodule "ChatbotTemplate"]
+	path = ChatbotTemplate
+	url = git@github.com:ASUCICREPO/ChatbotTemplate.git
