@@ -4,8 +4,6 @@ import * as apigatewayv2 from '@aws-cdk/aws-apigatewayv2-alpha';
 import * as apigatewayv2_integrations from '@aws-cdk/aws-apigatewayv2-integrations-alpha';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as s3 from 'aws-cdk-lib/aws-s3';
-import * as ses from 'aws-cdk-lib/aws-ses';
-import * as sesActions from 'aws-cdk-lib/aws-ses-actions';
 import { bedrock } from '@cdklabs/generative-ai-cdk-constructs';
 import * as amplify from '@aws-cdk/aws-amplify-alpha';
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
