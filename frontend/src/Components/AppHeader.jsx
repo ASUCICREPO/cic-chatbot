@@ -1,6 +1,6 @@
 import React from "react";
 import { Grid, AppBar } from "@mui/material";
-import Logo from "../Assets/header_logo.svg";
+import Logo from "../Assets/header_logo.png";
 import Switch from "./Switch.jsx";
 import { ALLOW_MULTLINGUAL_TOGGLE } from "../utilities/constants";
 

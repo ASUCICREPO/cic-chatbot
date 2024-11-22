@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Grid, Avatar, Typography, CircularProgress } from "@mui/material";
-import BotAvatar from "../Assets/BotAvatar.svg";
+import BotAvatar from "../Assets/BotAvatar.png";
 import PdfIcon from "../Assets/pdf_logo.svg";
 import {BOTMESSAGE_BACKGROUND} from "../utilities/constants";
 function BotFileCheckReply({ message, fileName, fileStatus }) {

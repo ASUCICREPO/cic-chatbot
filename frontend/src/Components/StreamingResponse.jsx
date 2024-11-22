@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Grid, Avatar, Typography } from "@mui/material";
-import BotAvatar from "../Assets/BotAvatar.svg";
+import BotAvatar from "../Assets/BotAvatar.png";
 import { WEBSOCKET_API, ALLOW_MARKDOWN_BOT } from "../utilities/constants";
 import ReactMarkdown from "react-markdown";
 
