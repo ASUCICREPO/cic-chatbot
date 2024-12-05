@@ -12,6 +12,7 @@ const StreamingMessage = ({ initialMessage, setProcessing }) => {
   useEffect(() => {
     // Initialize WebSocket connection
     ws.current = new WebSocket(WEBSOCKET_API);
+    console.log(WEBSOCKET_API);
 
     ws.current.onopen = () => {
       console.log("WebSocket Connected");

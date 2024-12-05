@@ -99,7 +99,7 @@ export const LANDING_PAGE_TEXT = {
 
 
 export const CHAT_API = process.env.REACT_APP_CHAT_API; // URL for the chat API endpoint
-export const WEBSOCKET_API = process.env.REACT_APP_WEBSOCKET_API; // URL for the WebSocket API endpoint
+export const WEBSOCKET_API = "wss://27dock5eme.execute-api.us-west-2.amazonaws.com/dev"; // URL for the WebSocket API endpoint
 
 
 // --------------------------------------------------------------------------------------------------------//

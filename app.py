@@ -21,7 +21,7 @@ lottie_brain = load_lottieurl("https://assets4.lottiefiles.com/packages/lf20_Skh
 # Function to call the API
 def call_api(query):
     # Replace with your actual API endpoint
-    api_url = os.getenv("AWS_STRING")
+    api_url = "https://kfz7vstiqa.execute-api.us-west-2.amazonaws.com/dev/bedrockChatAPI"
     try:
         response = requests.post(api_url, json={"user_query": query})
         response.raise_for_status()  # Raise an exception for bad status codes
