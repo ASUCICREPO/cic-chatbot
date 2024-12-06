@@ -9,6 +9,7 @@ import { ALLOW_FILE_UPLOAD, ALLOW_VOICE_RECOGNITION, ALLOW_FAQ } from "../utilit
 import BotFileCheckReply from "./BotFileCheckReply";
 import SpeechRecognitionComponent from "./SpeechRecognition";
 import {FAQExamples} from "./index";
+import { useLanguage } from "../utilities/LanguageContext";
 
 function ChatBody() {
   const [messageList, setMessageList] = useState([]);
@@ -16,6 +17,7 @@ function ChatBody() {
   const [message, setMessage] = useState("");
   const [questionAsked, setQuestionAsked] = useState(false); // state to track if a question was asked to remove the FAQs once done
   const messagesEndRef = useRef(null);
+  const { language } = useLanguage();
 
   useEffect(() => {
     scrollToBottom();
@@ -61,7 +63,7 @@ function ChatBody() {
           </Box>
           {messageList.map((msg, index) => (
             <Box key={index} mb={2}>
-              {msg.sentBy === "USER" ? <UserReply message={msg.message} /> : msg.sentBy === "BOT" && msg.state === "PROCESSING" ? <StreamingResponse initialMessage={msg.message} setProcessing={setProcessing} /> : <BotFileCheckReply message={msg.message} fileName={msg.fileName} fileStatus={msg.fileStatus} messageType={msg.sentBy === "USER" ? "user_doc_upload" : "bot_response"} />}
+              {msg.sentBy === "USER" ? <UserReply message={msg.message} /> : msg.sentBy === "BOT" && msg.state === "PROCESSING" ? <StreamingResponse initialMessage={msg.message} setProcessing={setProcessing} language={language} /> : <BotFileCheckReply message={msg.message} fileName={msg.fileName} fileStatus={msg.fileStatus} messageType={msg.sentBy === "USER" ? "user_doc_upload" : "bot_response"} />}
             </Box>
           ))}
           <div ref={messagesEndRef} />

@@ -15,7 +15,7 @@ def handle_message(event, connection_id):
         # Parse the message body and extract prompt and language settings
         body = json.loads(event.get('body', '{}'))
         prompt = body.get('prompt', '')
-        language = body.get('Language', 'EN')  # Default to 'EN' if not provided
+        language = body.get('language', 'EN')  # Default to 'EN' if not provided
         
         # Log the received language and prompt for debugging
         print(f"Language from request: [{language}]")

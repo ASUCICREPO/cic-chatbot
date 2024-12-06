@@ -3,15 +3,16 @@ import { Grid, Avatar, Typography } from "@mui/material";
 import BotAvatar from "../Assets/BotAvatar.png";
 import { WEBSOCKET_API, ALLOW_MARKDOWN_BOT } from "../utilities/constants";
 import ReactMarkdown from "react-markdown";
-import { useLanguage } from "../utilities/LanguageContext";
+import { getCookie } from "../utilities/cookies"; // Import cookie utility
 
 const StreamingMessage = ({ initialMessage, setProcessing }) => {
   const [responses, setResponses] = useState([]);
   const ws = useRef(null);
   const messageBuffer = useRef(""); // Buffer to hold incomplete JSON strings
-  const { language } = useLanguage();
 
   useEffect(() => {
+    const language = getCookie("language") || "EN"; // Default to "EN" if no language cookie is found
+    
     // Initialize WebSocket connection
     ws.current = new WebSocket(WEBSOCKET_API);
     console.log(WEBSOCKET_API);

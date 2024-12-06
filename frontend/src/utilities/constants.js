@@ -96,7 +96,7 @@ export const LANDING_PAGE_TEXT = {
 // --------------------------------------------------------------------------------------------------------//
 
 // API endpoints
-
+export const CHAT_API = process.env.REACT_APP_CHAT_API;
 export const WEBSOCKET_API = process.env.REACT_APP_WEBSOCKET_API; // URL for the WebSocket API endpoint
 
 // --------------------------------------------------------------------------------------------------------//
@@ -111,5 +111,5 @@ export const ALLOW_LANDING_PAGE = true; // Set to true to enable the landing pag
 
 // --------------------------------------------------------------------------------------------------------//
 // Styling under work, would reccomend keeping it false for now
-export const ALLOW_MARKDOWN_BOT = false; // Set to true to enable markdown support for bot messages
+export const ALLOW_MARKDOWN_BOT = true; // Set to true to enable markdown support for bot messages
 export const ALLOW_FAQ = true; // Set to true to enable the FAQs to be visible in Chat body 
