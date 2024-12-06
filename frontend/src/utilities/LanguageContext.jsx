@@ -6,7 +6,6 @@ const LanguageContext = createContext();
 
 export const LanguageProvider = ({ children }) => {
   const [cookies, setCookie] = useCookies(['language']);
-  //const defaultLanguage = cookies.language || (!ALLOW_LANDING_PAGE ? 'EN' : '');
   const defaultLanguage = cookies.language || (!ALLOW_LANDING_PAGE ? 'EN' : '');
   const [language, setLanguage] = useState(defaultLanguage);
 

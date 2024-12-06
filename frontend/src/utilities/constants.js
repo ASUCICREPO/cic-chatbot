@@ -49,21 +49,21 @@ export const TEXT = {
     APP_NAME: "Aplicación de Plantilla de Chatbot",
     APP_ASSISTANT_NAME: "Bot GenAI",
     ABOUT_US_TITLE: "Acerca de nosotros",
-    ABOUT_US: "¡Bienvenido al chatbot GenAI! Estamos aquí para ayudarte a acceder rápidamente a la información relevante.",
+    ABOUT_US: "¡Bienvenido al asistente de chat GenAI del ASU Cloud Innovation Center! Estamos aquí para ayudarlo a acceder rápidamente a la información relevante.",
     FAQ_TITLE: "Preguntas frecuentes",
     FAQS: [
-      "¿Qué es React JS? y ¿Cómo puedo empezar?",
-      "¿Qué es un Chatbot y cómo funciona?",
-      "Escríbeme un ensayo sobre la historia de Internet.",
-      "¿Cuál es la capital de Francia y su población?",
-      "¿Cómo está el clima en Nueva York?"
+      "¿Qué es el Centro de Innovación en la Nube?",
+      "¿Qué hizo el Centro de Innovación en la Nube para el zoológico de Phoenix?",
+      "¿Cómo puedo trabajar con el Cloud Innovation Center?",
+      "¿Quién trabaja en el Centro de Innovación en la Nube?",
+      "¿En qué proyectos trabaja el Centro de innovación en la nube?"
     ],
-    CHAT_HEADER_TITLE: "Asistente de Chat AI de Ejemplo",
+    CHAT_HEADER_TITLE: "Asistente de chat CIC GenAI",
     CHAT_INPUT_PLACEHOLDER: "Escribe una Consulta...",
     HELPER_TEXT: "No se puede enviar un mensaje vacío",
     SPEECH_RECOGNITION_START: "Comenzar a Escuchar",
     SPEECH_RECOGNITION_STOP: "Dejar de Escuchar",
-    SPEECH_RECOGNITION_HELPER_TEXT: "Deja de hablar para enviar el mensaje" // New helper text
+    SPEECH_RECOGNITION_HELPER_TEXT: "Deja de hablar para enviar el mensaje"
   }
 };
 
@@ -87,7 +87,7 @@ export const LANDING_PAGE_TEXT = {
     ENGLISH: "English",
     SPANISH: "Español",
     SAVE_CONTINUE: "Guardar y continuar",
-    APP_ASSISTANT_NAME: "Bot GenAI de Ejemplo Página de Inicio",
+    APP_ASSISTANT_NAME: "Página de inicio de CIC GenAI Bot",
   }
 };
 
@@ -97,10 +97,7 @@ export const LANDING_PAGE_TEXT = {
 
 // API endpoints
 
-
-export const CHAT_API = process.env.REACT_APP_CHAT_API; // URL for the chat API endpoint
-export const WEBSOCKET_API = "wss://27dock5eme.execute-api.us-west-2.amazonaws.com/dev"; // URL for the WebSocket API endpoint
-
+export const WEBSOCKET_API = process.env.REACT_APP_WEBSOCKET_API; // URL for the WebSocket API endpoint
 
 // --------------------------------------------------------------------------------------------------------//
 // --------------------------------------------------------------------------------------------------------//

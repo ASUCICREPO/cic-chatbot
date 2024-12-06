@@ -3,11 +3,13 @@ import { Grid, Avatar, Typography } from "@mui/material";
 import BotAvatar from "../Assets/BotAvatar.png";
 import { WEBSOCKET_API, ALLOW_MARKDOWN_BOT } from "../utilities/constants";
 import ReactMarkdown from "react-markdown";
+import { useLanguage } from "../utilities/LanguageContext";
 
 const StreamingMessage = ({ initialMessage, setProcessing }) => {
   const [responses, setResponses] = useState([]);
   const ws = useRef(null);
   const messageBuffer = useRef(""); // Buffer to hold incomplete JSON strings
+  const { language } = useLanguage();
 
   useEffect(() => {
     // Initialize WebSocket connection
@@ -17,7 +19,7 @@ const StreamingMessage = ({ initialMessage, setProcessing }) => {
     ws.current.onopen = () => {
       console.log("WebSocket Connected");
       // Send initial message
-      ws.current.send(JSON.stringify({ action: "sendMessage", prompt: initialMessage }));
+      ws.current.send(JSON.stringify({ action: "sendMessage", prompt: initialMessage, language: language}));
     };
 
     ws.current.onmessage = (event) => {
