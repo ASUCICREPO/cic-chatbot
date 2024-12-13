@@ -133,7 +133,10 @@ code {
   text-transform: uppercase;
 }
 li {
-   color : black;
+   color: black;
+}
+a:visited {
+  color: blue;
 }
 /* Text Align Classes */
 .MuiGrid-root.MuiGrid-item.userMessage {
