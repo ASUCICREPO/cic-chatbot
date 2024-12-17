@@ -106,8 +106,8 @@ export const WEBSOCKET_API = process.env.REACT_APP_WEBSOCKET_API; // URL for the
 export const ALLOW_FILE_UPLOAD = false; // Set to true to enable file upload feature
 export const ALLOW_VOICE_RECOGNITION = true; // Set to true to enable voice recognition feature
 
-export const ALLOW_MULTLINGUAL_TOGGLE = true; // Set to true to enable multilingual support
-export const ALLOW_LANDING_PAGE = true; // Set to true to enable the landing page
+export const ALLOW_MULTLINGUAL_TOGGLE = false; // Set to true to enable multilingual support
+export const ALLOW_LANDING_PAGE = false; // Set to true to enable the landing page
 
 // --------------------------------------------------------------------------------------------------------//
 // Styling under work, would reccomend keeping it false for now

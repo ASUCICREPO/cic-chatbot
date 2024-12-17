@@ -25,7 +25,7 @@ function AppHeader({ showSwitch }) {
         className="appHeight100"
       >
         <Grid item>
-          <img src={Logo} alt={`App main Logo`} height={64} />
+          <img src={Logo} alt={`App main Logo`} height={64} onClick={() => window.location.reload()} style={{ cursor: 'pointer' }} />
         </Grid>
         <Grid item>
           <Grid container alignItems="center" justifyContent="space-evenly" spacing={2}>
