@@ -17,6 +17,12 @@ export class CicChatAssistantStack extends cdk.Stack {
 
     constructor(scope: Construct, id: string, props: CicChatAssistantStackProps) {
         super(scope, id, props);
+        
+        // Define constants for environment variables
+        const KNOWLEDGE_BASE_ID = '<KNOWLEDGE_BASE_ID>';
+        const ORCHESTRATION_MODEL_ID = '<ORCHESTRATION_MODEL_ID>';
+        const STAGE = '<STAGE>';
+        const WEBSOCKET_API_ID = '<WEBSOCKET_API_ID>';
 
         // Create the Bedrock knowledge base
         const kb = new bedrock.KnowledgeBase(this, 'knowledge-base-quick-start-z2bdk', {
@@ -42,6 +48,8 @@ export class CicChatAssistantStack extends cdk.Stack {
         // Web Socket API
         const webSocketApi = new apigatewayv2.WebSocketApi(this, 'cic-web-socket-api', {
             apiName: 'cic-web-socket-api',
+            connectRouteOptions: { integration: webSocketIntegration },
+            disconnectRouteOptions: { integration: webSocketIntegration },
         });
 
         const webSocketStage = new apigatewayv2.WebSocketStage(this, 'cic-web-socket-stage', {
@@ -59,13 +67,16 @@ export class CicChatAssistantStack extends cdk.Stack {
           });
 
         // get-response-from-bedrock Lambda function
-        const getResponseFromBedrockLambda = new lambda.Function(this, 'CICWebsiteChatFunction', {
+        const getResponseFromBedrockLambda = new lambda.Function(this, 'get-response-from-bedrock', {
             runtime: lambda.Runtime.PYTHON_3_12,
-            code: lambda.Code.fromAsset('lambda/CICWebsiteChatFunction'),
-            handler: 'lambda_function.lambda_handler',
+            code: lambda.Code.fromAsset('lambda/get-response-from-bedrock'),
+            handler: 'index.handler',
             environment: {
-            URL: webSocketStage.callbackUrl,
-            KNOWLEDGE_BASE_ID: kb.knowledgeBaseId,
+                KNOWLEDGE_BASE_ID: KNOWLEDGE_BASE_ID,
+                ORCHESTRATION_MODEL_ID: ORCHESTRATION_MODEL_ID,
+                STAGE: STAGE,
+                URL: webSocketStage.url,
+                WEBSOCKET_API_ID: WEBSOCKET_API_ID
             },
             timeout: cdk.Duration.seconds(300),
             memorySize: 256
@@ -92,12 +103,12 @@ export class CicChatAssistantStack extends cdk.Stack {
           }));
       
         // web-socket-handler Lambda function
-        const webSocketHandler = new lambda.Function(this, 'cic-web-socket-handler', {
+        const webSocketHandler = new lambda.Function(this, 'web-socket-handler', {
         runtime: lambda.Runtime.PYTHON_3_12,
         code: lambda.Code.fromAsset('lambda/web-socket-handler'),
-        handler: 'lambda_handler.lambda_handler',
+        handler: 'index.handler',
         environment: {
-            RESPONSE_FUNCTION_ARN: getResponseFromBedrockLambda.functionArn
+            RESPONSE_FUNCTION_ARN: '<RESPONSE_FUNCTION_ARN>'
         }
         });
 
@@ -113,8 +124,14 @@ export class CicChatAssistantStack extends cdk.Stack {
         );
 
         webSocketHandler.addToRolePolicy(new iam.PolicyStatement({
-        actions: ['execute-api:ManageConnections'],
-        resources: [webSocketApiArn],
+        actions: [
+            'execute-api:ManageConnections',
+            'translate:TranslateText',
+            'lambda:InvokeFunction',
+            'bedrock:*',
+            'bedrock-runtime:*'
+        ],
+        resources: ['*'],
         }));
 
         // GitHub personal access token stored in Secrets Manager
