@@ -5,8 +5,9 @@ import * as apigatewayv2_integrations from '@aws-cdk/aws-apigatewayv2-integratio
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import { bedrock } from '@cdklabs/generative-ai-cdk-constructs';
-import * as amplify from '@aws-cdk/aws-amplify-alpha';
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
+import * as amplify from '@aws-cdk/aws-amplify-alpha';
+
 import { Construct } from 'constructs';
 
 interface CicChatAssistantStackProps extends cdk.StackProps {
@@ -14,20 +15,108 @@ interface CicChatAssistantStackProps extends cdk.StackProps {
 }
 
 export class CicChatAssistantStack extends cdk.Stack {
-
     constructor(scope: Construct, id: string, props: CicChatAssistantStackProps) {
         super(scope, id, props);
         
-        // Define constants for environment variables
-        const KNOWLEDGE_BASE_ID = '<KNOWLEDGE_BASE_ID>';
-        const ORCHESTRATION_MODEL_ID = '<ORCHESTRATION_MODEL_ID>';
-        const STAGE = '<STAGE>';
-        const WEBSOCKET_API_ID = '<WEBSOCKET_API_ID>';
-
         // Create the Bedrock knowledge base
         const kb = new bedrock.KnowledgeBase(this, 'knowledge-base-quick-start-z2bdk', {
             embeddingsModel: bedrock.BedrockFoundationModel.TITAN_EMBED_TEXT_V2_1024,
             instruction: 'Use this knowledge base to answer questions about the Cloud Innovation Center',
+        });
+
+        // get-response-from-bedrock Lambda function
+        const getResponseFromBedrockLambda = new lambda.Function(this, 'get-response-from-bedrock', {
+            runtime: lambda.Runtime.PYTHON_3_12,
+            code: lambda.Code.fromAsset('lambda/get-response-from-bedrock'),
+            handler: 'index.handler',
+            environment: {
+                KNOWLEDGE_BASE_ID: kb.knowledgeBaseId,
+                URL: 'URL'
+            },
+            timeout: cdk.Duration.seconds(300),
+            memorySize: 256
+        });
+
+        // Grant permissions to access Bedrock for getResponseFromBedrockLambda
+        kb.grantRead(getResponseFromBedrockLambda);
+        getResponseFromBedrockLambda.addToRolePolicy(new iam.PolicyStatement({
+            actions: ['bedrock:InvokeModel'],
+            resources: ['*'],
+        }));
+
+        // Environment variables with placeholder values to guide users
+            const slackBotEnvVars = {
+                ASANA_PAT: '<ASANA_PAT>',
+                ASANA_PROJECT_ID: '<ASANA_PROJECT_ID>',
+                CLIENT_ID: '<CLIENT_ID>',
+                SLACK_SECRET: '<CLIENT_SECRET>',
+                KNOWLEDGE_BASE_ID: kb.knowledgeBaseId,
+                SLACK_BOT_TOKEN: '<SLACK_BOT_TOKEN>',
+                SLACK_BOT_USER_ID: '<SLACK_BOT_USER_ID>'
+            };
+
+        // Create Lambda function for Slack bot message processing
+        const slackBotProcessor = new lambda.Function(this, 'SlackBotProcessor', {
+            runtime: lambda.Runtime.PYTHON_3_9,
+            code: lambda.Code.fromAsset('lambda/slack-bot-processor'),
+            handler: 'index.handler',
+            environment: slackBotEnvVars,
+            timeout: cdk.Duration.minutes(5),
+            memorySize: 1024,
+        });
+
+        // Grant permissions to access Bedrock
+        kb.grantRead(slackBotProcessor);
+        slackBotProcessor.addToRolePolicy(new iam.PolicyStatement({
+            actions: ['bedrock:InvokeModel'],
+            resources: ['*'],
+        }));
+        
+        // Add permissions for Asana API access
+        slackBotProcessor.addToRolePolicy(new iam.PolicyStatement({
+            actions: [
+                'lambda:InvokeFunction'
+            ],
+            resources: ['*'],
+        }));
+
+        
+
+        // Create Lambda function for Slack bot opener
+        const slackBotOpener = new lambda.Function(this, 'SlackBotOpener', {
+            runtime: lambda.Runtime.PYTHON_3_9,
+            code: lambda.Code.fromAsset('lambda/slack-bot-opener'),
+            handler: 'index.handler',
+            environment: {
+                RESPONSE_FUNCTION_ARN: slackBotProcessor.functionArn
+            },
+            timeout: cdk.Duration.minutes(1),
+            memorySize: 256,
+        });
+
+        // Grant permissions for opener to invoke processor and response function
+        slackBotProcessor.grantInvoke(slackBotOpener);
+        getResponseFromBedrockLambda.grantInvoke(slackBotOpener);
+
+        // Create HTTP API Gateway
+        const httpApi = new apigatewayv2.HttpApi(this, 'SlackBotApi', {
+            apiName: 'slack-bot-api',
+        });
+
+        // Add route for Slack bot opener
+        httpApi.addRoutes({
+            path: '/slack/events',
+            methods: [apigatewayv2.HttpMethod.POST],
+            integration: new apigatewayv2_integrations.HttpLambdaIntegration(
+                'SlackBotIntegration',
+                slackBotOpener
+            ),
+        });
+
+        // Output the API endpoint URL
+        new cdk.CfnOutput(this, 'SlackBotApiUrl', {
+            value: httpApi.url!,
+            description: 'URL of the Slack bot API endpoint',
         });
 
         // Create the S3 bucket to house our data
@@ -45,6 +134,30 @@ export class CicChatAssistantStack extends cdk.Stack {
           });
         
         
+        // web-socket-handler Lambda function
+        const webSocketHandler = new lambda.Function(this, 'web-socket-handler', {
+            runtime: lambda.Runtime.PYTHON_3_12,
+            code: lambda.Code.fromAsset('lambda/web-socket-handler'),
+            handler: 'index.handler',
+            environment: {
+                RESPONSE_FUNCTION_ARN: getResponseFromBedrockLambda.functionArn
+            },
+            timeout: cdk.Duration.seconds(300),
+            memorySize: 256
+        });
+
+        // Grant permission to invoke response function
+        getResponseFromBedrockLambda.grantInvoke(webSocketHandler);
+
+        // Grant Amazon Translate permissions to web-socket-handler
+        webSocketHandler.addToRolePolicy(new iam.PolicyStatement({
+            effect: iam.Effect.ALLOW,
+            actions: ['translate:TranslateText', 'translate:DetectDominantLanguage'],
+            resources: ['*']
+        }));
+
+        const webSocketIntegration = new apigatewayv2_integrations.WebSocketLambdaIntegration('cic-web-socket-integration', webSocketHandler);
+
         // Web Socket API
         const webSocketApi = new apigatewayv2.WebSocketApi(this, 'cic-web-socket-api', {
             apiName: 'cic-web-socket-api',
@@ -60,27 +173,11 @@ export class CicChatAssistantStack extends cdk.Stack {
 
         const webSocketApiArn = `arn:aws:execute-api:${this.region}:${this.account}:${webSocketApi.apiId}/${webSocketStage.stageName}/POST/@connections/*`;
         
-        // Creates IAM policy for bedrock
-        const bedrockPolicy = new iam.PolicyStatement({
-            actions: ['bedrock:*'],
-            resources: ['*'],
-          });
+        
 
-        // get-response-from-bedrock Lambda function
-        const getResponseFromBedrockLambda = new lambda.Function(this, 'get-response-from-bedrock', {
-            runtime: lambda.Runtime.PYTHON_3_12,
-            code: lambda.Code.fromAsset('lambda/get-response-from-bedrock'),
-            handler: 'index.handler',
-            environment: {
-                KNOWLEDGE_BASE_ID: KNOWLEDGE_BASE_ID,
-                ORCHESTRATION_MODEL_ID: ORCHESTRATION_MODEL_ID,
-                STAGE: STAGE,
-                URL: webSocketStage.url,
-                WEBSOCKET_API_ID: WEBSOCKET_API_ID
-            },
-            timeout: cdk.Duration.seconds(300),
-            memorySize: 256
-        });
+        // Update getResponseFromBedrockLambda environment variables now that WebSocket resources exist
+        getResponseFromBedrockLambda.addEnvironment('URL', webSocketStage.url);
+        getResponseFromBedrockLambda.addEnvironment('WEBSOCKET_API_ID', webSocketApi.apiId);
 
         getResponseFromBedrockLambda.addToRolePolicy(new iam.PolicyStatement({
             actions: [
@@ -102,19 +199,7 @@ export class CicChatAssistantStack extends cdk.Stack {
             ]
           }));
       
-        // web-socket-handler Lambda function
-        const webSocketHandler = new lambda.Function(this, 'web-socket-handler', {
-        runtime: lambda.Runtime.PYTHON_3_12,
-        code: lambda.Code.fromAsset('lambda/web-socket-handler'),
-        handler: 'index.handler',
-        environment: {
-            RESPONSE_FUNCTION_ARN: '<RESPONSE_FUNCTION_ARN>'
-        }
-        });
-
         getResponseFromBedrockLambda.grantInvoke(webSocketHandler);
-
-        const webSocketIntegration = new apigatewayv2_integrations.WebSocketLambdaIntegration('cic-web-socket-integration', webSocketHandler);
 
         webSocketApi.addRoute('sendMessage',
         {
