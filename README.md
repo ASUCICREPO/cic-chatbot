@@ -1,5 +1,7 @@
 # cic-chatbot
-Generative AI-powered chatbot for the Cloud Innovation Center's Website
+Generative AI-powered chatbot for the Cloud Innovation Center's Website and Slack Channel 
+
+![Architecture Diagram](docs/cic-chatbot.jpg)
 
 ## Documentation
 
