@@ -19,9 +19,33 @@ export class CicChatAssistantStack extends cdk.Stack {
         super(scope, id, props);
         
         // Create the Bedrock knowledge base
+        // Create an S3 bucket for knowledge base data
+        const kbDataBucket = new s3.Bucket(this, 'XXXXXXXXXXXXXXXXXXXXXXX', {
+            removalPolicy: cdk.RemovalPolicy.DESTROY,
+            autoDeleteObjects: true,
+        });
+
         const kb = new bedrock.KnowledgeBase(this, 'knowledge-base-quick-start-z2bdk', {
             embeddingsModel: bedrock.BedrockFoundationModel.TITAN_EMBED_TEXT_V2_1024,
             instruction: 'Use this knowledge base to answer questions about the Cloud Innovation Center',
+            dataSources: [
+                // Add web crawler data source
+                bedrock.DataSource.webCrawler({
+                    name: 'cic-website-crawler',
+                    crawlerConfiguration: {
+                        urls: [{
+                            siteUrl: 'https://website'  // Replace with your actual website URL
+                        }],
+                        crawlDepth: 3,
+                        crawlMode: bedrock.CrawlMode.SUBPATHS_ONLY
+                    }
+                }),
+                // Add S3 data source
+                bedrock.DataSource.s3({
+                    bucket: kbDataBucket,
+                    prefix: 'documents/',  // Optional: specify a prefix for your documents
+                })
+            ]
         });
 
         // get-response-from-bedrock Lambda function
@@ -123,16 +147,6 @@ export class CicChatAssistantStack extends cdk.Stack {
         const kb_bucket = new s3.Bucket(this, 'cic-doc-bucket', {
             removalPolicy: cdk.RemovalPolicy.RETAIN,
         });
-
-        const s3_data_source = new bedrock.S3DataSource(this, 'cic-document-datasource', {
-            bucket: kb_bucket,
-            knowledgeBase: kb,
-            dataSourceName: 'cic-document-datasource',
-            chunkingStrategy: bedrock.ChunkingStrategy.DEFAULT,
-            // maxTokens: 500,
-            // overlapPercentage: 20,
-          });
-        
         
         // web-socket-handler Lambda function
         const webSocketHandler = new lambda.Function(this, 'web-socket-handler', {
