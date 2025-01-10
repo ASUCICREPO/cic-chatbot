@@ -1,3 +1,4 @@
 streamlit
 streamlit_lottie
 python-dotenv
+slack_sdk
